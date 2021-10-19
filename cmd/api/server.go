@@ -1,29 +1,20 @@
 package main
 
 import (
-	"log"
 	"net/http"
-	"os"
-
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/mycok/shopit/graph"
-	"github.com/mycok/shopit/graph/generated"
+	"fmt"
 )
 
-const defaultPort = "8080"
-
-func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
+func (app *application) serve() error {
+	srv := &http.Server{
+		Addr: fmt.Sprintf(":%d", app.config.port),
+		Handler: http.DefaultServeMux,
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	app.logger.LogInfo("starting server", map[string]string{
+		"addr": srv.Addr,
+		"env": app.config.env,
+	})
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
-
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	return srv.ListenAndServe()
 }
