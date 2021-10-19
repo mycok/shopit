@@ -110,7 +110,8 @@ func (l *Logger) log(level Level, message string, props map[string]string) (int,
 	return l.out.Write(append(line, '\n'))
 }
 
-// Write() implements io.Writer.Write(p []byte) method.
+// Write() implements io.Writer.Write(p []byte) method. this makes the Logger suitable to be
+// passed around as a parameter value of type io.Writer.
 func (l *Logger) Write(message []byte) (int, error) {
 	return l.log(LevelError, string(message), nil)
 }

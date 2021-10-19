@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"os"
+	"sync"
 
 	"github.com/mycok/shopit/internal/jsonlog"
 )
@@ -20,6 +21,7 @@ type config struct {
 type application struct {
 	config config
 	logger *jsonlog.Logger
+	wg sync.WaitGroup
 }
 
 func main() {
