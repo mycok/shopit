@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"sync"
 
@@ -12,8 +13,8 @@ const version = "1.0.0"
 
 type config struct {
 	port int
-	env string
-	db struct {
+	env  string
+	db   struct {
 		dsn string
 	}
 }
@@ -21,7 +22,7 @@ type config struct {
 type application struct {
 	config config
 	logger *jsonlog.Logger
-	wg sync.WaitGroup
+	wg     sync.WaitGroup
 }
 
 func main() {
@@ -29,7 +30,6 @@ func main() {
 
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development | staging | production)")
-	flag.StringVar(&cfg.db.dsn, "db-dsn", "", "mongoDB DSN")
 	flag.Parse()
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
