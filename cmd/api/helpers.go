@@ -65,8 +65,10 @@ func (app *application) writeJSON(rw http.ResponseWriter, statusCode int, data e
 
 	js = append(js, '\n')
 
-	for key, val := range headers {
-		rw.Header()[key] = val
+	if headers != nil {
+		for key, val := range headers {
+			rw.Header()[key] = val
+		}
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
