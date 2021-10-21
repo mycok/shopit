@@ -30,33 +30,6 @@ type application struct {
 	wg     sync.WaitGroup
 }
 
-func openDB(logger *jsonlog.Logger, cfg config) (*mongo.Client, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(cfg.dbClient.dsn))
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	err = client.Connect(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			logger.LogFatal(err, nil)
-		}
-	}()
-
-	if err = client.Ping(ctx, readpref.Primary()); err != nil {
-		return nil, err
-	}
-
-	return client, nil
-}
-
 func main() {
 	var cfg config
 
@@ -72,7 +45,13 @@ func main() {
 		logger: logger,
 	}
 
-	_, err := openDB(app.logger, cfg)
+	client, err := openDB(cfg)
+	defer func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			logger.LogFatal(err, nil)
+		}
+	}()
+
 	if err != nil {
 		logger.LogFatal(err, nil)
 	}
@@ -81,4 +60,25 @@ func main() {
 	if err != nil {
 		logger.LogFatal(err, nil)
 	}
+}
+
+func openDB(cfg config) (*mongo.Client, error) {
+	client, err := mongo.NewClient(options.Client().ApplyURI(cfg.dbClient.dsn))
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = client.Ping(ctx, readpref.Primary()); err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
