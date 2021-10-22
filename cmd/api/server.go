@@ -15,7 +15,7 @@ import (
 func (app *application) serve() error {
 	srv := &http.Server{
 		Addr:        fmt.Sprintf(":%d", app.config.port),
-		Handler:     http.DefaultServeMux,
+		Handler:     app.routes(),
 		ErrorLog:    log.New(app.logger, "", 0),
 		IdleTimeout: time.Minute,
 	}
