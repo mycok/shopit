@@ -5,13 +5,9 @@ import (
 	"flag"
 	"os"
 	"sync"
-	"time"
 
+	"github.com/mycok/shopit/internal/db/mongo"
 	"github.com/mycok/shopit/internal/jsonlog"
-
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 const version = "1.0.0"
@@ -25,9 +21,10 @@ type config struct {
 }
 
 type application struct {
-	config config
-	logger *jsonlog.Logger
-	wg     sync.WaitGroup
+	config       config
+	logger       *jsonlog.Logger
+	wg           sync.WaitGroup
+	repositories *mongo.Repositories
 }
 
 func main() {
@@ -40,45 +37,33 @@ func main() {
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
-	app := &application{
-		config: cfg,
-		logger: logger,
+	// Open a mongo server connection.
+	client, err := mongo.OpenConnection(cfg.dbClient.dsn)
+	if err != nil {
+		logger.LogFatal(err, nil)
 	}
 
-	client, err := openDB(cfg)
+	// Create a database and register new collections.
+	db := mongo.New(client, "shopit")
+	err = db.RegisterNewCollections()
+	if err != nil {
+		logger.LogFatal(err, nil)
+	}
+
 	defer func() {
 		if err := client.Disconnect(context.TODO()); err != nil {
 			logger.LogFatal(err, nil)
 		}
 	}()
 
-	if err != nil {
-		logger.LogFatal(err, nil)
+	app := &application{
+		config:       cfg,
+		logger:       logger,
+		repositories: mongo.NewRepositories(db.DB),
 	}
 
 	err = app.serve()
 	if err != nil {
 		logger.LogFatal(err, nil)
 	}
-}
-
-func openDB(cfg config) (*mongo.Client, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(cfg.dbClient.dsn))
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	err = client.Connect(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = client.Ping(ctx, readpref.Primary()); err != nil {
-		return nil, err
-	}
-
-	return client, nil
 }
