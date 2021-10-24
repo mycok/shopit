@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/mycok/shopit/internal/data"
 )
 
-func (app *application) RegisterUser(rw http.ResponseWriter, r *http.Request) {
+func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
@@ -27,6 +26,7 @@ func (app *application) RegisterUser(rw http.ResponseWriter, r *http.Request) {
 		Email:     input.Email,
 		Version:   version,
 		CreatedAt: time.Now(),
+		IsActive: false,
 	}
 
 	err = user.Password.Set(input.Password)
@@ -36,16 +36,11 @@ func (app *application) RegisterUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := app.repositories.Users.Insert(user)
+	_id, err := app.repositories.Users.Insert(user)
 	if err != nil {
 		app.serverErrResponse(rw, r, err)
 
 		return
-	}
-
-	_id, success := result.(*string)
-	if !success {
-		app.serverErrResponse(rw, r, fmt.Errorf("user result casting failed"))
 	}
 
 	err = app.writeJSON(rw, http.StatusCreated, envelope{

@@ -6,10 +6,11 @@ import (
 
 	"github.com/mycok/shopit/internal/data"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const userCollection = "user"
+const userCollection = "users"
 
 // UserRepository encapsulates user repository's database instance.
 type UserRepository struct {
@@ -17,14 +18,14 @@ type UserRepository struct {
 }
 
 // Insert adds a user document into the database.
-func (r *UserRepository) Insert(user *data.User) (interface{}, error) {
+func (r *UserRepository) Insert(user *data.User) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	result, err := r.db.Collection(userCollection).InsertOne(ctx, user)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return result, nil
+	return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }

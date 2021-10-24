@@ -12,13 +12,13 @@ var AnonymousUser = &User{}
 
 // User represents the user type model.
 type User struct {
-	ID        string    `json:"id"`
-	CreatedAt time.Time `json:"created_at" bson:"created_at,omitempty"`
+	ID        string    `json:"id" bson:"id,omitempty"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Password  Password  `json:"-"`
 	IsActive  bool      `json:"is_active"`
 	Version   string    `json:"-"`
+	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 }
 
 // IsAnonymous performs an equality check on a user instance to verify if it's an
@@ -29,8 +29,7 @@ func (u *User) IsAnonymous() bool {
 
 // Password represents a password type model.
 type Password struct {
-	plainText *string
-	hash      []byte
+	Hash []byte
 }
 
 // Set calculates the password hash.
@@ -40,15 +39,14 @@ func (p *Password) Set(plainTextPassword string) error {
 		return err
 	}
 
-	p.plainText = &plainTextPassword
-	p.hash = hash
+	p.Hash = hash
 
 	return nil
 }
 
 // DoesMatch compares the plain text password with a password hash.
 func (p *Password) DoesMatch(plainTextPassword string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plainTextPassword))
+	err := bcrypt.CompareHashAndPassword(p.Hash, []byte(plainTextPassword))
 	if err != nil {
 		switch {
 		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
