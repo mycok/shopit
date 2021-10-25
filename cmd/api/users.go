@@ -26,7 +26,7 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 		Email:     input.Email,
 		Version:   version,
 		CreatedAt: time.Now(),
-		IsActive: false,
+		IsActive:  false,
 	}
 
 	err = user.Password.Set(input.Password)

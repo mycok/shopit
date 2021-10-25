@@ -11,8 +11,8 @@ var userCollectionSchema = dbCollection{
 		ValidationLevel:  &validationLevel,
 		Validator: bson.M{
 			"$jsonSchema": bson.M{
-				"bsonType": "object",
-				"required": []string{"username", "email", "password"},
+				"bsonType":             "object",
+				"required":             []string{"username", "email", "password"},
 				"additionalProperties": false,
 				"properties": bson.M{
 					"username": bson.M{
@@ -24,7 +24,7 @@ var userCollectionSchema = dbCollection{
 						"description": "user email address",
 					},
 					"password": bson.M{
-						"bsonType": "binData",
+						"bsonType":    "binData",
 						"description": "user hashed password",
 					},
 					"isActive": bson.M{
