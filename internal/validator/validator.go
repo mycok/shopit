@@ -2,11 +2,8 @@ package validator
 
 import "regexp"
 
-// EmailRegex represents an email regular expression.
-var EmailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-
-// PasswordRegex represents a password regular expression.
-var PasswordRegex = regexp.MustCompile("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})")
+// MissingFieldErrMsg is a string representation of a missing field value.
+const MissingFieldErrMsg string = "must be provided"
 
 // Validator encapsulates a set of validation rules and methods.
 type Validator struct {

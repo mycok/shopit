@@ -26,6 +26,10 @@ func (app *application) badRequestErrResponse(rw http.ResponseWriter, r *http.Re
 	app.errResponse(rw, r, http.StatusBadRequest, err.Error())
 }
 
+func (app *application) failedValidationResponse(rw http.ResponseWriter, r *http.Request, errs map[string]string) {
+	app.errResponse(rw, r, http.StatusUnprocessableEntity, errs)
+}
+
 func (app *application) logErr(r *http.Request, err error) {
 	app.logger.LogError(err, map[string]string{
 		"request_method": r.Method,
