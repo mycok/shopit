@@ -75,7 +75,7 @@ func OpenConnection(dsn string) (*mongo.Client, error) {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	err = client.Connect(ctx)

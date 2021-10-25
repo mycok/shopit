@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/mycok/shopit/internal/data"
+	"github.com/mycok/shopit/internal/validator"
 )
 
 func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
@@ -27,11 +28,26 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 		Version:   version,
 		CreatedAt: time.Now(),
 		IsActive:  false,
+		IsSeller:  false,
+	}
+
+	v := validator.New()
+	data.ValidatePassword(v, input.Password)
+	if !v.IsValid() {
+		app.failedValidationResponse(rw, r, v.Errors)
+
+		return
 	}
 
 	err = user.Password.Set(input.Password)
 	if err != nil {
 		app.serverErrResponse(rw, r, err)
+
+		return
+	}
+
+	if user.Validate(v); !v.IsValid() {
+		app.failedValidationResponse(rw, r, v.Errors)
 
 		return
 	}
