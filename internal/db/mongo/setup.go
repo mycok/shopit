@@ -41,7 +41,7 @@ func (db *DB) addCollection(collection dbCollection) {
 
 // RegisterNewCollections adds new collections if any to the existing database instance.
 func (db *DB) RegisterNewCollections() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	existingCollections, err := db.DB.ListCollectionNames(ctx, bson.D{}, options.ListCollections().SetNameOnly(true))
