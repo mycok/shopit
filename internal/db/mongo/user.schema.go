@@ -31,6 +31,10 @@ var userCollectionSchema = dbCollection{
 						"bsonType":    "bool",
 						"description": "user active status",
 					},
+					"isSeller": bson.M{
+						"bsonType":    "bool",
+						"description": "user seller status",
+					},
 					"version": bson.M{
 						"bsonType":    "string",
 						"description": "user record version since last update",
