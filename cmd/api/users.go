@@ -58,11 +58,11 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 		switch  {
 		case errors.Is(err, data.DuplicateKeyErr):
 			app.badRequestErrResponse(rw, r, err)
-			return
 		default:
 			app.serverErrResponse(rw, r, err)
-			return
 		}
+
+		return
 	}
 
 	err = app.writeJSON(rw, http.StatusCreated, envelope{
