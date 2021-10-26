@@ -11,6 +11,7 @@ import (
 )
 
 type dbCollection map[string]*options.CreateCollectionOptions
+type collectionIndexModel map[string][]mongo.IndexModel
 
 var (
 	validationAction = "error"
@@ -22,16 +23,18 @@ type DB struct {
 	Client      *mongo.Client
 	DB          *mongo.Database
 	collections []dbCollection
+	collectionIndexModels []collectionIndexModel
 }
 
 // New returns a configured *DB instance.
 func New(client *mongo.Client, dbName string) *DB {
-	database := client.Database(dbName)
+	db := client.Database(dbName)
 
 	return &DB{
 		Client:      client,
-		DB:          database,
-		collections: []dbCollection{userCollectionSchema},
+		DB:          db,
+		collections: []dbCollection{{"users": nil}},
+		collectionIndexModels: []collectionIndexModel{usersIndexModels},
 	}
 }
 
@@ -63,6 +66,26 @@ first:
 				return err
 			}
 		}
+	}
+
+	db.addCollectionIndices(ctx)
+
+	return nil
+}
+
+func(db *DB) addCollectionIndices(ctx context.Context) error {
+	for _, col := range db.collections {
+		for name := range col {
+			for _, idxModel := range db.collectionIndexModels {
+				if _, exists := idxModel[name]; exists {
+					opts := options.CreateIndexes().SetMaxTime(2 * time.Second)
+		 			_, err := db.DB.Collection(name, nil).Indexes().CreateMany(ctx, idxModel[name], opts)
+				 	if err != nil {
+				 		return err
+				 	}
+				}
+			}
+		 } 
 	}
 
 	return nil

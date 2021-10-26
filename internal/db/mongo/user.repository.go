@@ -24,7 +24,12 @@ func (r *UserRepository) Insert(user *data.User) (string, error) {
 
 	result, err := r.db.Collection(userCollection).InsertOne(ctx, user)
 	if err != nil {
-		return "", err
+		switch  {
+		case mongo.IsDuplicateKeyError(err):
+			return "", data.DuplicateKeyErr
+		default:
+			return "", err
+		}
 	}
 
 	return result.InsertedID.(primitive.ObjectID).Hex(), nil

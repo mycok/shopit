@@ -45,6 +45,7 @@ func main() {
 
 	// Create a database and register new collections.
 	db := mongo.New(client, "shopit")
+
 	err = db.RegisterNewCollections()
 	if err != nil {
 		logger.LogFatal(err, nil)
