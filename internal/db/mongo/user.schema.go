@@ -2,10 +2,24 @@ package mongo
 
 import (
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var userCollectionSchema = dbCollection{
+var usersIndexModels = collectionIndexModel{
+		"users": []mongo.IndexModel{
+			{
+				Keys: bson.D{bson.E{Key: "username", Value: 1}},
+				Options: options.Index().SetUnique(true),
+			},
+			{
+				Keys: bson.D{bson.E{Key: "email", Value: 1}},
+				Options: options.Index().SetUnique(true),
+			},
+		},
+}
+
+var usersCollectionSchema = dbCollection{
 	"users": &options.CreateCollectionOptions{
 		ValidationAction: &validationAction,
 		ValidationLevel:  &validationLevel,

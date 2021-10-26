@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"errors"
 	"time"
 
 	"github.com/mycok/shopit/internal/data"
@@ -54,9 +55,14 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 
 	_id, err := app.repositories.Users.Insert(user)
 	if err != nil {
-		app.serverErrResponse(rw, r, err)
-
-		return
+		switch  {
+		case errors.Is(err, data.DuplicateKeyErr):
+			app.badRequestErrResponse(rw, r, err)
+			return
+		default:
+			app.serverErrResponse(rw, r, err)
+			return
+		}
 	}
 
 	err = app.writeJSON(rw, http.StatusCreated, envelope{
