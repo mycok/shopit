@@ -16,8 +16,6 @@ const (
 	emailErrMsg    string = "must be valid"
 )
 
-var DuplicateKeyErr = errors.New("username and or email already taken")
-
 // EmailRegex represents an email regular expression.
 var EmailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
@@ -26,7 +24,7 @@ var AnonymousUser = &User{}
 
 // User represents the user type model.
 type User struct {
-	ID        string    `json:"id" bson:"id,omitempty"`
+	ID        string    `json:"id" bson:"_id,omitempty"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Password  Password  `json:"-" bson:",omitempty"`

@@ -20,9 +20,9 @@ var (
 
 // DB encapsulates the mongoDB connection properties.
 type DB struct {
-	Client      *mongo.Client
-	DB          *mongo.Database
-	collections []dbCollection
+	Client                *mongo.Client
+	DB                    *mongo.Database
+	collections           []dbCollection
 	collectionIndexModels []collectionIndexModel
 }
 
@@ -31,10 +31,10 @@ func New(client *mongo.Client, dbName string) *DB {
 	db := client.Database(dbName)
 
 	return &DB{
-		Client:      client,
-		DB:          db,
-		collections: []dbCollection{{"users": nil}},
-		collectionIndexModels: []collectionIndexModel{usersIndexModels},
+		Client:                client,
+		DB:                    db,
+		collections:           []dbCollection{{"users": nil}, {"tokens": nil}},
+		collectionIndexModels: []collectionIndexModel{usersIndexModels, tokensIndexModels},
 	}
 }
 
@@ -73,19 +73,19 @@ first:
 	return nil
 }
 
-func(db *DB) addCollectionIndices(ctx context.Context) error {
+func (db *DB) addCollectionIndices(ctx context.Context) error {
 	for _, col := range db.collections {
 		for name := range col {
 			for _, idxModel := range db.collectionIndexModels {
 				if _, exists := idxModel[name]; exists {
 					opts := options.CreateIndexes().SetMaxTime(2 * time.Second)
-		 			_, err := db.DB.Collection(name, nil).Indexes().CreateMany(ctx, idxModel[name], opts)
-				 	if err != nil {
-				 		return err
-				 	}
+					_, err := db.DB.Collection(name, nil).Indexes().CreateMany(ctx, idxModel[name], opts)
+					if err != nil {
+						return err
+					}
 				}
 			}
-		 } 
+		}
 	}
 
 	return nil

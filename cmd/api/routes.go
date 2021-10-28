@@ -12,8 +12,9 @@ func (app *application) routes() http.Handler {
 	r.NotFound = http.HandlerFunc(app.notFoundErrRespone)
 	r.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedErrResponse)
 
-	r.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthCheckHandler)
+	r.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthCheck)
 	r.HandlerFunc(http.MethodPost, "/v1/users", app.registerUser)
+	r.HandlerFunc(http.MethodPost, "/v1/tokens/auth", app.createAuthToken)
 
 	return app.recoverFromPanic(r)
 }
