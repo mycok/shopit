@@ -30,6 +30,11 @@ func (app *application) failedValidationResponse(rw http.ResponseWriter, r *http
 	app.errResponse(rw, r, http.StatusUnprocessableEntity, errs)
 }
 
+func (app *application) invalidCredentialsResponse(rw http.ResponseWriter, r *http.Request) {
+	message := "invalid authentication credentials"
+	app.errResponse(rw, r, http.StatusUnauthorized, message)
+}
+
 func (app *application) logErr(r *http.Request, err error) {
 	app.logger.LogError(err, map[string]string{
 		"request_method": r.Method,

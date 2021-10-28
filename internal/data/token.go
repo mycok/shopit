@@ -20,19 +20,19 @@ const tokenErrMsg string = "must be 26 bytes long"
 
 // Token encapsulates data for an individual token.
 type Token struct {
-	PlainText string `json:"token"`
-	Hash []byte `json:"-"`
-	UserID string `json:"-"`
-	Expiry time.Time `json:"expiry"`
-	Scope string `json:"-"`
+	PlainText string    `json:"token" bson:"-"`
+	Hash      []byte    `json:"-"`
+	UserID    string    `json:"-" bson:"user_id"`
+	Expiry    time.Time `json:"expiry"`
+	Scope     string    `json:"-"`
 }
 
 // GenerateToken returns a fully configured instance of a Token type.
 func GenerateToken(validFor time.Duration, userID, scope string) (*Token, error) {
 	token := &Token{
 		UserID: userID,
-		Expiry: time.Now().Add(validFor),
-		Scope: scope,
+		Expiry: time.Now().UTC().Add(validFor),
+		Scope:  scope,
 	}
 
 	randomBytes := make([]byte, 16)
@@ -60,7 +60,7 @@ func GenerateToken(validFor time.Duration, userID, scope string) (*Token, error)
 	return token, nil
 }
 
-// ValidatePlainTextToken() checks that the plaintext token is provided and is exactly 52 bytes long
+// ValidatePlainTextToken checks that the plaintext token is provided and is exactly 52 bytes long
 func ValidatePlainTextToken(v *validator.Validator, token string) {
 	v.Check(token != "", "token", validator.MissingFieldErrMsg)
 	v.Check(len(token) == 26, "token", tokenErrMsg)

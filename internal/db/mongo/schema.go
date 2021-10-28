@@ -7,16 +7,25 @@ import (
 )
 
 var usersIndexModels = collectionIndexModel{
-		"users": []mongo.IndexModel{
-			{
-				Keys: bson.D{bson.E{Key: "username", Value: 1}},
-				Options: options.Index().SetUnique(true),
-			},
-			{
-				Keys: bson.D{bson.E{Key: "email", Value: 1}},
-				Options: options.Index().SetUnique(true),
-			},
+	"users": []mongo.IndexModel{
+		{
+			Keys:    bson.D{bson.E{Key: "username", Value: 1}},
+			Options: options.Index().SetUnique(true),
 		},
+		{
+			Keys:    bson.D{bson.E{Key: "email", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+	},
+}
+
+var tokensIndexModels = collectionIndexModel{
+	"tokens": []mongo.IndexModel{
+		{
+			Keys:    bson.D{bson.E{Key: "expiry", Value: 1}},
+			Options: options.Index().SetExpireAfterSeconds(0),
+		},
+	},
 }
 
 var usersCollectionSchema = dbCollection{

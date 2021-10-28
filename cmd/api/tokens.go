@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -9,28 +8,21 @@ import (
 	"github.com/mycok/shopit/internal/validator"
 )
 
-func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
+func (app *application) createAuthToken(rw http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Username string `json:"username"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
 	err := app.readJSON(rw, r, &input)
 	if err != nil {
-		app.badRequestErrResponse(rw, r, err)
+		app.serverErrResponse(rw, r, err)
 
 		return
 	}
 
-	user := &data.User{
-		Username:  input.Username,
-		Email:     input.Email,
-		Version:   version,
-		CreatedAt: time.Now().UTC(),
-	}
-
 	v := validator.New()
+	data.ValidateEmail(v, input.Email)
 	data.ValidatePassword(v, input.Password)
 	if !v.IsValid() {
 		app.failedValidationResponse(rw, r, v.Errors)
@@ -38,33 +30,37 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = user.Password.Set(input.Password)
+	var user data.User
+
+	err = app.repositories.Users.GetByEmail(input.Email, &user)
+	if err != nil {
+		app.invalidCredentialsResponse(rw, r)
+
+		return
+	}
+
+	mathes, err := user.Password.DoesMatch(input.Password)
 	if err != nil {
 		app.serverErrResponse(rw, r, err)
 
 		return
 	}
 
-	if user.Validate(v); !v.IsValid() {
-		app.failedValidationResponse(rw, r, v.Errors)
+	if !mathes {
+		app.invalidCredentialsResponse(rw, r)
 
 		return
 	}
 
-	_id, err := app.repositories.Users.Insert(user)
+	token, err := app.repositories.Tokens.New(120 * time.Second, user.ID, data.ScopeAuthentication)
 	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrDuplicateKey):
-			app.badRequestErrResponse(rw, r, err)
-		default:
-			app.serverErrResponse(rw, r, err)
-		}
+		app.serverErrResponse(rw, r, err)
 
 		return
 	}
 
 	err = app.writeJSON(rw, http.StatusCreated, envelope{
-		"id": *_id,
+		"auth_token": token,
 	}, nil)
 	if err != nil {
 		app.serverErrResponse(rw, r, err)
