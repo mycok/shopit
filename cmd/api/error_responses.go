@@ -35,19 +35,21 @@ func (app *application) invalidCredentialsResponse(rw http.ResponseWriter, r *ht
 	app.errResponse(rw, r, http.StatusUnauthorized, message)
 }
 
+func (app *application) errResponse(rw http.ResponseWriter, r *http.Request, statusCode int, message interface{}) {
+	env := envelope{"error": message}
+
+	err := app.writeJSON(rw, statusCode, env, nil)
+	// If an error occurs when marshaling JSON, log the error to the std:out and write a 500
+	// status code to the response returned to the client.
+	if err != nil {
+		app.logErr(r, err)
+		rw.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
 func (app *application) logErr(r *http.Request, err error) {
 	app.logger.LogError(err, map[string]string{
 		"request_method": r.Method,
 		"request_url":    r.URL.String(),
 	})
-}
-
-func (app *application) errResponse(rw http.ResponseWriter, r *http.Request, statusCode int, message interface{}) {
-	env := envelope{"error": message}
-
-	err := app.writeJSON(rw, statusCode, env, nil)
-	if err != nil {
-		app.logErr(r, err)
-		rw.WriteHeader(http.StatusInternalServerError)
-	}
 }

@@ -18,7 +18,7 @@
 	The Shopit Team
 {{end}}
 
-{{define "HTML body"}}
+{{define "htmlBody"}}
 	<!doctype html>
 		<html>
 		    <head>
@@ -30,9 +30,9 @@
 		        <p>Hi,</p>
 		        <p>Thank you for signing up with shopit. We're excited to have you on board!</p> 
 		        <p>For future reference, your user ID number is {{.userID}}.</p>
-		        <p>Please send a request to <code style={color: "red"}>PUT /v1/users/activated</code> endpoint with the following JSON body to activate your account.</p>
-		        <pre><code style={color: "red"}>{"token": "{{.activationToken}}"}</code></pre>
-		        <p style={color: "red"}>Please note that this is a one-time use token and it will expire in 3 days.</p>
+		        <p>Please send a request to <code>PUT /v1/users/activated</code> endpoint with the following JSON body to activate your account.</p>
+		        <pre><code>{"token": "{{.activationToken}}"}</code></pre>
+		        <p>Please note that this is a one-time use token and it will expire in 3 days.</p>
 		        <p>Thanks,</p>
 		        <p>The Shopit Team</p>
 		    </body>

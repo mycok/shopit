@@ -63,7 +63,33 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.writeJSON(rw, http.StatusCreated, envelope{
+	token, err := app.repositories.Tokens.New(3*24*time.Hour, *_id, data.ScopeActivation)
+	if err != nil {
+		app.serverErrResponse(rw, r, err)
+	}
+
+	app.runInBackground(func() {
+		data := map[string]interface{}{
+			"activationToken": token.PlainText,
+			"userID":          token.UserID,
+		}
+
+		err := app.mailer.Send(data, "user_welcome.go.tmpl", user.Email)
+		if err != nil {
+			// If there is an error sending the email then we use the
+			// app.logger.PrintError() helper to manage it, instead of the
+			// app.serverErrorResponse() helper. This is because the email sending functionality
+			// runs in a background goroutine which means the handler may return before the email sending
+			// goroutine returns. This makes writing a JSON error response redundant since the request-response
+			// cycle would already have completed.
+			app.logger.LogError(err, nil)
+		}
+	})
+
+	// Send the client a 202 Accepted status code to indicate that the request has been
+	// accepted for processing but the processing has not yet been completed to cater for cases where the handler
+	// returns before the email sending functionality is complete.
+	err = app.writeJSON(rw, http.StatusAccepted, envelope{
 		"id": *_id,
 	}, nil)
 	if err != nil {
