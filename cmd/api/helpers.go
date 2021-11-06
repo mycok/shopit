@@ -77,3 +77,21 @@ func (app *application) writeJSON(rw http.ResponseWriter, statusCode int, data e
 
 	return nil
 }
+
+func (app *application) runInBackground(fn func()) {
+	app.wg.Add(1)
+
+	go func() {
+		defer app.wg.Done()
+
+		// Run a deferred function which uses recover() to catch any panic, and log an
+		// error message instead of terminating the application.
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.LogError(fmt.Errorf("%s", err), nil)
+			}
+		}()
+
+		fn()
+	}()
+}

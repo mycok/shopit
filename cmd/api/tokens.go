@@ -52,7 +52,7 @@ func (app *application) createAuthToken(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	token, err := app.repositories.Tokens.New(24 * time.Hour, user.ID, data.ScopeAuthentication)
+	token, err := app.repositories.Tokens.New(24*time.Hour, user.ID, data.ScopeAuthentication)
 	if err != nil {
 		app.serverErrResponse(rw, r, err)
 
