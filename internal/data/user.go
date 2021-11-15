@@ -5,9 +5,9 @@ import (
 	"regexp"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/mycok/shopit/internal/validator"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -24,13 +24,13 @@ var AnonymousUser = &User{}
 
 // User represents the user type model.
 type User struct {
-	ID        string    `json:"id" bson:"_id,omitempty"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Password  Password  `json:"-" bson:",omitempty"`
-	IsActive  bool      `json:"is_active"`
-	IsSeller  bool      `json:"is_seller"`
-	Version   string    `json:"-"`
+	ID        string    `json:"_id,omitempty" bson:"_id,omitempty"`
+	Username  string    `json:"username" bson:"username"`
+	Email     string    `json:"email" bson:"email"`
+	Password  Password  `json:"-" bson:"password"`
+	IsActive  bool      `json:"is_active" bson:"isactive"`
+	IsSeller  bool      `json:"is_seller" bson:"isseller"`
+	Version   string    `json:"version" bson:"version"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 }
 

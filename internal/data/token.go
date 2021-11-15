@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/mycok/shopit/internal/validator"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -20,16 +22,18 @@ const tokenErrMsg string = "must be 26 bytes long"
 
 // Token encapsulates data for an individual token.
 type Token struct {
+	ID        string    `json:"-,omitempty" bson:"_id,omitempty"`
 	PlainText string    `json:"token" bson:"-"`
 	Hash      []byte    `json:"-"`
 	UserID    string    `json:"-" bson:"user_id"`
-	Expiry    time.Time `json:"expiry"`
+	Expiry    time.Time `json:"expiry" bson:"expiry,omitempty"`
 	Scope     string    `json:"-"`
 }
 
 // GenerateToken returns a fully configured instance of a Token type.
-func GenerateToken(validFor time.Duration, userID, scope string) (*Token, error) {
+func GenerateToken(validFor time.Duration, userID string, scope string) (*Token, error) {
 	token := &Token{
+		ID:     uuid.New().String(),
 		UserID: userID,
 		Expiry: time.Now().UTC().Add(validFor),
 		Scope:  scope,
