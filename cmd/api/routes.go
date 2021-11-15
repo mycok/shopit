@@ -14,6 +14,7 @@ func (app *application) routes() http.Handler {
 
 	r.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthCheck)
 	r.HandlerFunc(http.MethodPost, "/v1/users", app.registerUser)
+	r.HandlerFunc(http.MethodPut, "/v1/users/activate", app.activateUser)
 	r.HandlerFunc(http.MethodPost, "/v1/tokens/auth", app.createAuthToken)
 
 	return app.recoverFromPanic(r)

@@ -25,6 +25,14 @@ var tokensIndexModels = collectionIndexModel{
 			Keys:    bson.D{bson.E{Key: "expiry", Value: 1}},
 			Options: options.Index().SetExpireAfterSeconds(0),
 		},
+		{
+			Keys:    bson.D{bson.E{Key: "hash", Value: 1}},
+			Options: options.Index().SetName("hash_index"),
+		},
+		{
+			Keys:    bson.D{bson.E{Key: "scope", Value: 1}},
+			Options: options.Index().SetName("scope_index"),
+		},
 	},
 }
 

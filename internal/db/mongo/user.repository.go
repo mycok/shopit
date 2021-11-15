@@ -8,7 +8,6 @@ import (
 	"github.com/mycok/shopit/internal/data"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -16,12 +15,13 @@ const usersCollection string = "users"
 
 // UserRepository encapsulates user repository functionality.
 type UserRepository struct {
-	db *mongo.Database
+	db      *mongo.Database
+	timeout time.Duration
 }
 
-// Insert adds a user document into the database.
+// Insert adds a new user document into the database.
 func (r *UserRepository) Insert(user *data.User) (*string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
 	defer cancel()
 
 	result, err := r.db.Collection(usersCollection).InsertOne(ctx, user)
@@ -34,17 +34,38 @@ func (r *UserRepository) Insert(user *data.User) (*string, error) {
 		}
 	}
 
-	docID := result.InsertedID.(primitive.ObjectID).Hex()
+	_id, ok := result.InsertedID.(string)
+	if !ok {
+		return nil, errors.New("failed type casting")
+	}
 
-	return &docID, err
+	return &_id, err
 }
 
-// GetByEmail queries a user document matching the provided email address.
+// GetByEmail queries for a user document matching the provided email address.
 func (r *UserRepository) GetByEmail(email string, dest *data.User) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
 	defer cancel()
 
-	err := r.db.Collection(usersCollection).FindOne(ctx, bson.D{bson.E{Key: "email", Value: email}}).Decode(&dest)
+	err := r.db.Collection(usersCollection).FindOne(ctx, bson.M{"email": email}).Decode(&dest)
+	if err != nil {
+		switch {
+		case errors.Is(err, mongo.ErrNoDocuments):
+			return data.ErrRecordNotFound
+		default:
+			return err
+		}
+	}
+
+	return err
+}
+
+// GetByID queries for a user document matching the provided ID string.
+func (r *UserRepository) GetByID(id string, dest *data.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
+	defer cancel()
+
+	err := r.db.Collection(usersCollection).FindOne(ctx, bson.M{"_id": id}).Decode(&dest)
 	if err != nil {
 		switch {
 		case errors.Is(err, mongo.ErrNoDocuments):

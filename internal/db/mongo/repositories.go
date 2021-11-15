@@ -1,8 +1,12 @@
 package mongo
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+const queryTimeout = 3 * time.Second
 
 // Repositories encapsulates various data repository instances.
 type Repositories struct {
@@ -13,7 +17,13 @@ type Repositories struct {
 // NewRepositories returns a configured instance of *Repositories type.
 func NewRepositories(db *mongo.Database) *Repositories {
 	return &Repositories{
-		Users:  UserRepository{db: db},
-		Tokens: TokenRepository{db: db},
+		Users: UserRepository{
+			db:      db,
+			timeout: queryTimeout,
+		},
+		Tokens: TokenRepository{
+			db:      db,
+			timeout: queryTimeout,
+		},
 	}
 }

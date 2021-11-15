@@ -7,4 +7,6 @@ var (
 	ErrDuplicateKey = errors.New("username and or email already taken")
 	// ErrRecordNotFound is returned when a find database query returns no record.
 	ErrRecordNotFound = errors.New("record not found")
+	// ErrInvalidOrExpiredToken is returned when token find query returns no record.
+	ErrInvalidOrExpiredToken = errors.New("invalid or expired token")
 )

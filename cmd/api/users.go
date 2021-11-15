@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mycok/shopit/internal/data"
 	"github.com/mycok/shopit/internal/validator"
 )
@@ -24,8 +25,11 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	user := &data.User{
+		ID:        uuid.New().String(),
 		Username:  input.Username,
 		Email:     input.Email,
+		IsActive:  false,
+		IsSeller:  false,
 		Version:   version,
 		CreatedAt: time.Now().UTC(),
 	}
@@ -66,6 +70,8 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 	token, err := app.repositories.Tokens.New(3*24*time.Hour, *_id, data.ScopeActivation)
 	if err != nil {
 		app.serverErrResponse(rw, r, err)
+
+		return
 	}
 
 	app.runInBackground(func() {
@@ -90,8 +96,58 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 	// accepted for processing but the processing has not yet been completed to cater for cases where the handler
 	// returns before the email sending functionality is complete.
 	err = app.writeJSON(rw, http.StatusAccepted, envelope{
-		"id": *_id,
+		"user_id": _id,
 	}, nil)
+	if err != nil {
+		app.serverErrResponse(rw, r, err)
+	}
+}
+
+func (app *application) activateUser(rw http.ResponseWriter, r *http.Request) {
+	var input struct {
+		PlainTextToken string `json:"token"`
+	}
+
+	err := app.readJSON(rw, r, &input)
+	if err != nil {
+		app.badRequestErrResponse(rw, r, err)
+
+		return
+	}
+
+	v := validator.New()
+	if data.ValidatePlainTextToken(v, input.PlainTextToken); !v.IsValid() {
+		app.failedValidationResponse(rw, r, v.Errors)
+
+		return
+	}
+
+	var token data.Token
+
+	err = app.repositories.Tokens.Get(input.PlainTextToken, data.ScopeActivation, &token)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.badRequestErrResponse(rw, r, data.ErrInvalidOrExpiredToken)
+		default:
+			app.serverErrResponse(rw, r, err)
+		}
+
+		return
+	}
+
+	var user data.User
+
+	err = app.repositories.Users.GetByID(token.UserID, &user)
+	if err != nil {
+		app.serverErrResponse(rw, r, err)
+
+		return
+	}
+
+	user.IsActive = true
+
+	err = app.writeJSON(rw, http.StatusAccepted, envelope{"user": user}, nil)
 	if err != nil {
 		app.serverErrResponse(rw, r, err)
 	}
