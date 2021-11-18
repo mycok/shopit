@@ -30,7 +30,7 @@ type User struct {
 	Password  Password  `json:"-" bson:"password"`
 	IsActive  bool      `json:"is_active" bson:"isactive"`
 	IsSeller  bool      `json:"is_seller" bson:"isseller"`
-	Version   string    `json:"version" bson:"version"`
+	Version   int64     `json:"version" bson:"version"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 }
 

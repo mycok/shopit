@@ -9,6 +9,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const usersCollection string = "users"
@@ -76,4 +77,31 @@ func (r *UserRepository) GetByID(id string, dest *data.User) error {
 	}
 
 	return err
+}
+
+// Update performs an update query for a document with a specified ID string
+func (r *UserRepository) Update(id string, updateData interface{}) (*mongo.UpdateResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
+	defer cancel()
+
+	update := bson.M{
+			"$set": updateData,
+			"$currentDate": bson.M{
+				"last_modified": true,
+			},
+	}
+
+	result, err := r.db.Collection(usersCollection).UpdateOne(
+		ctx, bson.M{"_id": id}, update, options.Update().SetUpsert(false),
+	)
+	if err != nil {
+		switch {
+		case mongo.IsDuplicateKeyError(err):
+			return nil, data.ErrDuplicateKey
+		default:
+			return nil, err
+		}
+	}
+
+	return result, err
 }

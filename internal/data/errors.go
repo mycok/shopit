@@ -9,4 +9,6 @@ var (
 	ErrRecordNotFound = errors.New("record not found")
 	// ErrInvalidOrExpiredToken is returned when token find query returns no record.
 	ErrInvalidOrExpiredToken = errors.New("invalid or expired token")
+	// ErrInvalidProperty is returned when user activation data contains invalid properties.
+	ErrInvalidProperty = errors.New("Invalid property")
 )
