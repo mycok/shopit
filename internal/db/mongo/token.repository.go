@@ -69,3 +69,23 @@ func (r *TokenRepository) Get(plainTextToken, scope string, dest *data.Token) er
 
 	return err
 }
+
+// DeleteAllForUser deletes all tokens matching the provided userID and scope.
+func (r *TokenRepository) DeleteAllForUser(userID, scope string) (*mongo.DeleteResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
+	defer cancel()
+
+	filter := bson.M{
+		"$and": []bson.M{
+			{"user_id": userID},
+			{"scope": scope},
+		},
+	}
+
+	result, err := r.db.Collection(tokensCollection).DeleteMany(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, err
+}

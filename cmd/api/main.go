@@ -11,7 +11,7 @@ import (
 	"github.com/mycok/shopit/internal/mailer"
 )
 
-const version = "1.0.0"
+const version int64 = 1
 
 type config struct {
 	port     int
