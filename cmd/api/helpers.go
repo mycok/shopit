@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 type envelope map[string]interface{}
@@ -94,4 +96,9 @@ func (app *application) runInBackground(fn func()) {
 
 		fn()
 	}()
+}
+
+// The readParam reads the params from the request.
+func (app *application) readParam(r *http.Request, paramName string) string {
+	return httprouter.ParamsFromContext(r.Context()).ByName(paramName)
 }

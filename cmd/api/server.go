@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+	"fmt"
 )
 
 func (app *application) serve() error {
@@ -19,6 +19,8 @@ func (app *application) serve() error {
 		ErrorLog:    log.New(app.logger, "", 0),
 		IdleTimeout: time.Minute,
 	}
+
+	app.server = srv
 
 	// Handle graceful shutdown of the server.
 	shutdownErrChan := make(chan error)

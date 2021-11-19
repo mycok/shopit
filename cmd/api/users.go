@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,7 +11,7 @@ import (
 	"github.com/mycok/shopit/internal/validator"
 )
 
-func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
+func (app *application) registerUserHandler(rw http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
@@ -75,12 +76,25 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	app.runInBackground(func() {
-		data := map[string]interface{}{
-			"activationToken": token.PlainText,
-			"userID":          token.UserID,
+		var serverAddr string
+
+		if app.server.Addr == ":4000" {
+			serverAddr = "http://localhost" + app.server.Addr + "/v1/users/activate/" + token.PlainText
+		} else {
+			serverAddr = app.server.Addr + "/v1/users/activate/" + token.PlainText
 		}
 
-		err := app.mailer.Send(data, "user_welcome.go.tmpl", user.Email)
+		url, err := url.Parse(serverAddr)
+		if err != nil {
+			app.logger.LogError(err, nil)
+		}
+
+		data := map[string]interface{}{
+			"activationToken": token.PlainText,
+			"activationLink":  url.String(),
+		}
+
+		err = app.mailer.Send(data, "user_welcome.go.tmpl", user.Email)
 		if err != nil {
 			// If there is an error sending the email then we use the
 			// app.logger.PrintError() helper to manage it, instead of the
@@ -103,20 +117,11 @@ func (app *application) registerUser(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) activateUser(rw http.ResponseWriter, r *http.Request) {
-	var input struct {
-		PlainTextToken string `json:"token"`
-	}
-
-	err := app.readJSON(rw, r, &input)
-	if err != nil {
-		app.badRequestErrResponse(rw, r, err)
-
-		return
-	}
+func (app *application) activateUserHandler(rw http.ResponseWriter, r *http.Request) {
+	plainTextToken := app.readParam(r, "token")
 
 	v := validator.New()
-	if data.ValidatePlainTextToken(v, input.PlainTextToken); !v.IsValid() {
+	if data.ValidatePlainTextToken(v, plainTextToken); !v.IsValid() {
 		app.failedValidationResponse(rw, r, v.Errors)
 
 		return
@@ -124,7 +129,7 @@ func (app *application) activateUser(rw http.ResponseWriter, r *http.Request) {
 
 	var token data.Token
 
-	err = app.repositories.Tokens.Get(input.PlainTextToken, data.ScopeActivation, &token)
+	err := app.repositories.Tokens.Get(plainTextToken, data.ScopeActivation, &token)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -150,10 +155,10 @@ func (app *application) activateUser(rw http.ResponseWriter, r *http.Request) {
 
 	updateData := struct {
 		IsActive bool
-		Version int64
+		Version  int64
 	}{
 		IsActive: true,
-		Version: user.Version + version,
+		Version:  user.Version + version,
 	}
 
 	updateRes, err := app.repositories.Users.Update(user.ID, updateData)
