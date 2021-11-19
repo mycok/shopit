@@ -5,9 +5,11 @@
 
 	Thank you for signing up with shopit. We are excited to have you on board!
 
-	For future reference, your user ID number is {{.userID}}.
+	Please click or tap the link below to activate your account.
 
-	Please send a request to `PUT /v1/users/activated` with the following JSON body to activate your account.
+	{{.activationLink}}
+
+	You can also send a request to `PUT /v1/users/activated` with the JSON body below to activate your account.
 
 	{"token": "{{.activationToken}}"}
 
@@ -24,14 +26,17 @@
 		    <head>
 		        <meta name="viewport" content="width=device-width" />
 		        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		        <title>Activate your account</title>
 		    </head>
 
 		    <body>
 		        <p>Hi,</p>
 		        <p>Thank you for signing up with shopit. We're excited to have you on board!</p> 
-		        <p>For future reference, your user ID number is {{.userID}}.</p>
+		        <p><a href='{{.activationLink}}'>Click or tap here to activate your account</a></p>
+
 		        <p>Please send a request to <code>PUT /v1/users/activated</code> endpoint with the following JSON body to activate your account.</p>
 		        <pre><code>{"token": "{{.activationToken}}"}</code></pre>
+
 		        <p>Please note that this is a one-time use token and it will expire in 3 days.</p>
 		        <p>Thanks,</p>
 		        <p>The Shopit Team</p>

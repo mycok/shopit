@@ -12,10 +12,11 @@ func (app *application) routes() http.Handler {
 	r.NotFound = http.HandlerFunc(app.notFoundErrRespone)
 	r.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedErrResponse)
 
-	r.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthCheck)
-	r.HandlerFunc(http.MethodPost, "/v1/users", app.registerUser)
-	r.HandlerFunc(http.MethodPut, "/v1/users/activate", app.activateUser)
-	r.HandlerFunc(http.MethodPost, "/v1/tokens/auth", app.createAuthToken)
+	r.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthCheckHandler)
+	r.HandlerFunc(http.MethodPost, "/v1/users", app.registerUserHandler)
+	r.HandlerFunc(http.MethodPut, "/v1/users/activate:token", app.activateUserHandler)
+	r.HandlerFunc(http.MethodGet, "/v1/users/activate/:token", app.activateUserHandler)
+	r.HandlerFunc(http.MethodPost, "/v1/tokens/auth", app.createAuthTokenHandler)
 
 	return app.recoverFromPanic(r)
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"net/http"
 	"os"
 	"sync"
 
@@ -29,6 +30,7 @@ type config struct {
 }
 
 type application struct {
+	server       *http.Server
 	config       config
 	logger       *jsonlog.Logger
 	wg           sync.WaitGroup

@@ -85,10 +85,10 @@ func (r *UserRepository) Update(id string, updateData interface{}) (*mongo.Updat
 	defer cancel()
 
 	update := bson.M{
-			"$set": updateData,
-			"$currentDate": bson.M{
-				"last_modified": true,
-			},
+		"$set": updateData,
+		"$currentDate": bson.M{
+			"last_modified": true,
+		},
 	}
 
 	result, err := r.db.Collection(usersCollection).UpdateOne(

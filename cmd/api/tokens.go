@@ -8,7 +8,7 @@ import (
 	"github.com/mycok/shopit/internal/validator"
 )
 
-func (app *application) createAuthToken(rw http.ResponseWriter, r *http.Request) {
+func (app *application) createAuthTokenHandler(rw http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
